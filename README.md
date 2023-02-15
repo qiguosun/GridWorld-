@@ -49,8 +49,22 @@ $$\sum_r r \sum_{a,s'} p(s',r|s,a)\cdot \pi(a|s)=\sum_r \boldsymbol{\rho_r} \sum
 
 
 where  
-$$\boldsymbol{Q}\in R^{N\times |S|}$$
+$$\boldsymbol{Q}\in R^{N\times |S|}, Q_{rs}=\sum_{a,s'} p(s',r|s,a) \cdot \pi(a|s) $$
 
+with $v$ as a row vector with dimension $|S|$, where $\boldsymbol{v}_{s'}=v_\pi (s')$
 
+$$\sum_a \pi(a|s)\sum_{s',r} \gamma v_\pi(s')\cdot p(s',r|s,a) = \gamma \sum_{s'} \boldsymbol{v}_{s'} \cdot \sum_{a,r} p(s',r|s,a)\cdot \pi(a|s) = \gamma(\boldsymbol{Rv})_{s} $$
+
+where 
+
+$$\boldsymbol{R}\in R^{|S|\times|S|}, \boldsymbol{R}_{s',s}=\sum_{a,r}p(s',r|s,a)\cdot \pi(a|s)$$
+
+write the Bellman equation in vectorised form
+
+$$\boldsymbol{v} = \boldsymbol{Q}\boldsymbol{\rho}+\gamma\boldsymbol{Rv}$$
+
+Solving for $\boldsymbol{v}$:
+
+$$(\boldsymbol{I}-\gamma\boldsymbol{R})\boldsymbol{v} = \boldsymbol{Q}\boldsymbol{\rho} \implies \boldsymbol{v}=(\boldsymbol{I}-\gamma\boldsymbol{R})^{-1} \boldsymbol{Q\rho}$$
 
 
