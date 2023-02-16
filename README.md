@@ -67,4 +67,50 @@ Solving for $\boldsymbol{v}$:
 
 $$(\boldsymbol{I}-\gamma\boldsymbol{R})\boldsymbol{v} = \boldsymbol{Q}\boldsymbol{\rho} \implies \boldsymbol{v}=(\boldsymbol{I}-\gamma\boldsymbol{R})^{-1} \boldsymbol{Q\rho}$$
 
+# Optimal value function
 
+**Belman optimality equation**
+$$v_{\*}(s) = \max_a \sum_{s',r}p(s',r|s,a)[r+\gamma v^{\*}(s')]$$
+
+Let $P_{s'rsa}$ be a 4D tensor and $P_{s':sa}$ be where the |R|-d vector obtained by fixting  s',s and a whilst $P_{:rsa}$ be the |S|-d vector obtained by fixing r,s,and a.
+
+$$v^{\*}_s = \max_a(\sum_{s'} \boldsymbol{P}_{s':sa} \boldsymbol{\rho} + \gamma \sum_r \boldsymbol{P}^T_{:rsa} v^{\*})$$
+
+## Estimating the best poliby $\pi^{\*}$ iteratively
+This equation for $v^{\*}_s$ is non-linear equation which needs to be solved iteratively. we will initialise v and $\pi$ with some value and updating v with the max over all actions a as illustrated in the function for $v^{\*}_s$ until the difference becomes negligible. The actions at a given state that yield the best value will give us the best policy $\pi^{\*}$.
+
+The method of Iterative Policy Evaluation given in Sutton and Barto is as follows
+
+<img width="626" alt="image" src="https://user-images.githubusercontent.com/121702927/219266011-f21ddea0-4e58-4076-a8fc-5aaf7531ca20.png">
+
+A vectorised approach (https://minibatchai.com/rl/2021/08/31/Bellman-1.html) is given by 
+
+```python
+def estimate_vstar(v_init, prob_next_reward, rewards, gamma = 0.9, tol=1e-12):
+    iters = 0
+    v_prev = v_init
+    vs = [v_prev]
+    diffs = []
+    while True:
+        iters+=1
+        QQ = np.einsum('Srsa,r->sa', prob_next_reward, rewards)
+        RR = np.einsum('Srsa,S->sa',prob_next_reward, v_prev)
+        v_next = np.max(QQ + gamma*RR, axis=-1)
+        diff = np.square(v_prev-v_next)
+        diffs.append(np.mean(diff))
+        if iters % 20 == 0:
+            print('\rIteration {}, mean squared difference {}'.format(iters, diffs[-1]))
+        vs.append(v_next)
+        if np.all(diff < tol):
+            break
+        v_prev = v_next 
+        
+    print('\rFinal iteration {}, mean squared difference {}'.format(iters, diffs[-1]))
+    return v_next, vs, diffs, QQ, RR
+```
+
+Then it's time to solve the problem defined in Example 3.8. The initiall states were set to 0 and the action is considered equally good. In addition, the same environment allows same P tensor. 
+
+```python
+vstar, vs, diffs, QQ, RR = estimate_vstar(np.zeros((5,5)), P, rewards)
+```
